@@ -1,0 +1,57 @@
+name: Build Actions Runner
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - github-runner-linux/**
+      - infrastructure/acr/**
+  workflow_dispatch:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      AZURE_LOCATION: australiaeast
+      ACR_ROOT: ${{ github.workspace }}/infrastructure/acr
+      LNX_RUNNER_ROOT: ${{ github.workspace }}/github-runner-linux
+      IMAGE_VERSION: 1.0.0.${{ github.run_number }}
+      AZURE_RG: ${{ vars.ENV_AZURE_RG }}
+      ACR_NAME: ${{ vars.ENV_ACR_NAME }}
+      ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
+      LNX_IMAGE_NAME: github-runners/github-runner-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+
+      - name: Create RG
+        uses: azure/CLI@v1
+        with:
+          azcliversion: latest
+          inlineScript: |
+            if [[ $(az group exists --name $AZURE_RG) == true ]]; then
+              echo "Resource group already exists."
+            else
+                az group create --name $AZURE_RG --location $AZURE_LOCATION
+            fi
+
+      - name: Deploy ACR
+        uses: ./.github/actions/github-runner-build
+        with:
+          AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+          ROOT: $ACR_ROOT
+          AZURE_RG: $AZURE_RG
+          ACR_NAME: $ACR_NAME
+          LNX_RUNNER_ROOT: $LNX_RUNNER_ROOT
+          LNX_IMAGE_NAME: $LNX_IMAGE_NAME
+          IMAGE_VERSION: $IMAGE_VERSION
+          ACR_SERVER: $ACR_SERVER

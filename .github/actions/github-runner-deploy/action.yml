@@ -1,0 +1,72 @@
+name: ADO Agent Deploy
+description: Deploys ACI from ado agent image published to ACR
+
+inputs:
+  AZURE_CREDENTIALS:
+    description: 'AZURE_CREDENTIALS'
+    required: true
+  AZURE_RG:
+    required: true
+    description: AZURE_RG
+  ROOT:
+    required: true
+    description: ROOT
+  ACR_NAME:
+    required: true
+    description: ACR_NAME
+  LNX_ACI_NAME:
+    required: true
+    description: LNX_ACI_NAME
+  GITHUB_TOKEN:
+    required: true
+    description: GITHUB_TOKEN
+  GITHUB_REPOSITORY:
+    required: true
+    description: GITHUB_REPOSITORY
+  LNX_IMAGE_NAME:
+    required: true
+    description: LNX_IMAGE_NAME
+  ACR_SERVER:
+    required: true
+    description: ACR_SERVER
+  INSTANCES_COUNT:
+    description: Number of container instances
+    default: '2'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ inputs.AZURE_CREDENTIALS }}
+
+    - name: Deploy ACI
+      uses: azure/CLI@v1
+      with:
+        azcliversion: latest
+        inlineScript: |
+            # get the ACR password
+            user=${{ inputs.ACR_NAME }}
+            password=$(az acr credential show -n $user --query "passwords[0].value" -o tsv)
+
+            environmentVariables='[
+              {"name":"GITHUB_TOKEN","secureValue":"${{ inputs.GITHUB_TOKEN }}"},
+              {"name":"GITHUB_REPOSITORY","value":"${{ inputs.GITHUB_REPOSITORY }}"}
+            ]'
+
+            # deploy ACI
+            az deployment group create \
+              --resource-group ${{ inputs.AZURE_RG }} \
+              --template-file ${{ inputs.ROOT }}/main.bicep \
+              --parameters ${{ inputs.ROOT }}/main.parameters.json \
+              --parameters name=${{ inputs.LNX_ACI_NAME }} \
+                          image=${{ inputs.LNX_IMAGE_NAME }} \
+                          imageServer=${{ inputs.ACR_SERVER }} \
+                          imageServerUsername="$user" \
+                          imageServerPassword="$password" \
+                          instances=${{ inputs.INSTANCES_COUNT}} \
+                          environmentVariables="$environmentVariables"
+              
+
+    

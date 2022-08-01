@@ -1,0 +1,31 @@
+name: ACR credentials
+description: Get azure container registry credentials
+
+inputs:
+  ACR_NAME:
+    description: 'ACR_NAME'
+    required: true
+
+outputs:
+  ACR_USERNAME:
+    description: 'ACR_USERNAME'
+    value: ${{ steps.acr.outputs.ACR_USERNAME }}
+  ACR_PASSWORD:
+    description: 'ACR_PASSWORD'
+    value: ${{ steps.acr.outputs.ACR_PASSWORD }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get registry credentials
+      id: acr
+      uses: azure/CLI@v1
+      with:
+        azcliversion: latest
+        inlineScript: |
+            ACR_USERNAME=$(az acr credential show -n "${{ inputs.ACR_NAME }}" --query "username"  -o tsv)
+            echo ACR_USERNAME=$ACR_USERNAME >> $GITHUB_OUTPUT  
+            
+            ACR_PASSWORD=$(az acr credential show -n "${{ inputs.ACR_NAME }}" --query "passwords[0].value"  -o tsv)
+            echo "::add-mask::$ACR_PASSWORD"
+            echo ACR_PASSWORD=$ACR_PASSWORD >> $GITHUB_OUTPUT  

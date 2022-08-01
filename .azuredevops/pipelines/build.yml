@@ -1,0 +1,74 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - ado-agent-linux
+      - infrastructure/acr
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - template: vars/env.yml
+  - name: ROOT
+    value: $(Build.SourcesDirectory)/infrastructure/acr
+
+jobs:
+  - job: infra
+    displayName: Deploy Infrastructure
+    steps:
+      - task: AzureCLI@2
+        displayName: Create RG
+        inputs:
+          azureSubscription: $(AZURE_CONNECTION)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            if [[ $(az group exists --name $AZURE_RG) == true ]]; then
+              echo "Resource group already exists."
+            else
+                az group create --name $AZURE_RG --location $AZURE_LOCATION
+            fi
+
+      - task: AzureCLI@2
+        displayName: Deploy ACR
+        inputs:
+          azureSubscription: $(AZURE_CONNECTION)
+          scriptType: pscore
+          scriptLocation: inlineScript
+          inlineScript: |
+            az deployment group create  `
+            --resource-group $(AZURE_RG) `
+            --template-file $(ROOT)/main.bicep `
+            --parameters $(ROOT)/main.parameters.json `
+            --parameters acrName=$(ACR_NAME)
+
+  - job: agent_linux
+    displayName: Build & Publish Linux Agent to ACR
+    dependsOn: infra
+    steps:
+      - task: DockerCompose@0
+        displayName: Build docker image
+        inputs:
+          action: Build services
+          azureSubscriptionEndpoint: $(AZURE_CONNECTION)
+          azureContainerRegistry: $(ACR_SERVER)
+          dockerComposeFile: $(LNX_AGENT_ROOT)/docker-compose.yml
+          projectName: $(PROJECT_NAME)
+          qualifyImageNames: true
+          additionalImageTags: $(IMAGE_VERSION)
+          includeLatestTag: true
+
+      - task: DockerCompose@0
+        displayName: Push image to ACR
+        inputs:
+          action: Push services
+          azureSubscriptionEndpoint: $(AZURE_CONNECTION)
+          azureContainerRegistry: $(ACR_SERVER)
+          dockerComposeFile: $(LNX_AGENT_ROOT)/docker-compose.yml
+          projectName: $(PROJECT_NAME)
+          qualifyImageNames: true
+          additionalImageTags: $(IMAGE_VERSION)
+          includeLatestTag: true

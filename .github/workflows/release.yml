@@ -1,0 +1,45 @@
+name: Deploy Actions Runner
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - infrastructure/aci/**
+  workflow_dispatch:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      AZURE_LOCATION: australiaeast
+      ACI_ROOT: ${{ github.workspace }}/infrastructure/aci
+      AZURE_RG: ${{ vars.ENV_AZURE_RG }}
+      ACR_NAME: ${{ vars.ENV_ACR_NAME }}
+      ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
+      LNX_ACI_NAME: ${{ vars.ENV_LNX_ACI_NAME }}
+      LNX_IMAGE_NAME: github-runners/github-runner-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+
+      - name: Deploy ACI
+        uses: ./.github/actions/github-runner-deploy
+        with:
+          AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+          ROOT: $ACI_ROOT
+          AZURE_RG: $AZURE_RG
+          ACR_NAME: $ACR_NAME
+          LNX_ACI_NAME: $LNX_ACI_NAME
+          GITHUB_TOKEN: ${{ secrets.ENV_GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LNX_IMAGE_NAME: $LNX_IMAGE_NAME
+          ACR_SERVER: $ACR_SERVER
