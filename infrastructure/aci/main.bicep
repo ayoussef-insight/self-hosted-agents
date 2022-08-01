@@ -1,0 +1,77 @@
+@description('Name for the container group')
+param name string
+@description('Location for all resources.')
+param location string = resourceGroup().location
+@description('Container image server url')
+param imageServer string
+@description('Container image server Username')
+param imageServerUsername string
+@secure()
+@description('Container image server Password.')
+param imageServerPassword string
+@description('Container image to deploy.')
+param image string
+@description('(Optional. VNet Subnet Resource Id to deploy the container instance to.')
+param subnetResourceId string = ''
+@description('The number of CPU cores to allocate to the container.')
+param cpuCores int = 1
+@description('The amount of memory to allocate to the container in gigabytes.')
+param memoryInGb int = 2
+@description('The behavior of Azure runtime if container has stopped.')
+@allowed([
+  'Always'
+  'Never'
+  'OnFailure'
+])
+param restartPolicy string = 'Always'
+@description('Number of container instances deploy')
+param instances int = 1
+@description('Container environment variables. Array of name, value|secureValue')
+param environmentVariables array
+
+var containerPrefix = 'self-hosted-'
+
+var envVariables = [for e in environmentVariables: {
+  name: e.name
+  value: contains(e, 'value') ? e.value : null
+  secureValue: contains(e, 'secureValue') ? e.secureValue : null
+}]
+
+resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
+  name: name
+  location: location
+  properties: {
+    containers: [for index in range(0, instances): {
+      name: '${containerPrefix}${padLeft(index + 1, 3, '0')}'
+      properties: {
+        image: '${imageServer}/${image}'
+        environmentVariables: concat(envVariables, [
+            {
+              name: 'NAME'
+              value: '${containerPrefix}${padLeft(index + 1, 3, '0')}'
+            }
+          ])
+        resources: {
+          requests: {
+            cpu: cpuCores
+            memoryInGB: memoryInGb
+          }
+        }
+      }
+    }]
+    imageRegistryCredentials: [
+      {
+        server: imageServer
+        username: imageServerUsername
+        password: imageServerPassword
+      }
+    ]
+    osType: 'Linux'
+    restartPolicy: restartPolicy
+    subnetIds: empty(subnetResourceId) ? [] : [
+      {
+        id: subnetResourceId
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+.vagrant*
+bin
+docker/docker
+.*.swp
+a.out
+*.orig
+build_src
+.flymake*
+.idea
+.DS_Store
+.dotcloud
+*.test
+bundles/
+.hg/
+.git/
+*.local
+*.local.*
