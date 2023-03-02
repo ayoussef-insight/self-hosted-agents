@@ -1,5 +1,5 @@
 name: ACR credentials
-description: Get azure container registry credentials
+description: Get Azure Container Registry credentials
 
 inputs:
   ACR_NAME:

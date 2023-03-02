@@ -1,5 +1,5 @@
-name: ADO Agent Deploy
-description: Deploys ACI from ado agent image published to ACR
+name: Github Actions Runner Deploy
+description: Deploys ACI from github actions runner image published to ACR
 
 inputs:
   AZURE_CREDENTIALS:

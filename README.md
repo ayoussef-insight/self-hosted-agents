@@ -101,7 +101,7 @@ Create build pipeline using an exisitng yaml file and select [.azuredevops/pipel
 - `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted agent image to.
 
 #### Run Build pipeline
-Run the build pipeline and when it is completed verify that the ACR is created and the agent image is published.
+Run the build pipeline and when it is completed go to Azure portal and verify that the ACR is created and the agent image is published.
 
 #### Run Release pipeline
 Run the deploy pipeline and when it is completed go to the agent pool and verify that the agents are created and online.
@@ -110,10 +110,10 @@ Run the deploy pipeline and when it is completed go to the agent pool and verify
 ### Pre-requisites
 
 #### Azure Service Principal
-To deploy azure resources you need an a service principal with enough permissions on the target Azure Subscription or Resource Group. Then, generate a secret and be sure to copy the token and store it in a secure location, as it cannot be viewed again later.
+To deploy azure resources you need a service principal with sufficient permissions on the target Azure Subscription or Resource Group. Then, generate a secret and be sure to copy the token and store it in a secure location, as it cannot be viewed again later.
 
 #### Personal Access Token (PAT)
-A personal access token (PAT) contains your security credentials for Github. It will be used by the self-hosted runner to call Github API to generate a self-hosted runner registration token. 
+A personal access token (PAT) contains your security credentials for Github. It will be used by the self-hosted runner to call Github API to generate a self-hosted runner's registration token. 
 
 To create a new PAT:
 - Log in to your GitHub account.
@@ -150,13 +150,17 @@ Replace <azure_subscription_id> with the subscription ID, <azure_tenant_id> with
 - `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted runner image to.
 
 #### Run Build workflow
-Run the "Build Actions Runner" workflow and when it is completed verify that the ACR is created and the agent image is published.
+Run the "Build Actions Runner" workflow and when it is completed go to Azure portal and verify that the ACR is created and the agent image is published.
 
 #### Run Release workflow
 Run the "Deploy Actions Runner workflow" and when it is completed go to the repository settings then Actions then Runners and verify that the runners are created.
 
 ## Virtual Network
-TODO
+Running self-hosted agents/runners inside a VNet allows pipelines jobs to access private resources inside the VNet. This can be particularly useful when deploying applications that require access to private databases, file shares, or other resources that are only accessible from within the VNet. By running the agents/runners inside the VNet, you can ensure that the pipeline jobs have access to these resources without exposing them to the public internet.
+
+To allow running Azure Container Instances (ACI) inside a VNet, you need to create a subnet specifically for the ACI. The subnet must be delegated to Azure Container Instances, which allows Azure to manage the underlying infrastructure for the ACI. To delegate the subnet, you need to configure the subnet properties to enable the "Microsoft.ContainerInstance/containerGroups" delegation. Once the delegation is enabled, you can pass the ACI subnet resource id to the [infrastructure/aci/main.bicep](infrastructure/aci/main.bicep) `subnetResourceId` parameter and run the release pipeline/workflow.
+
+**Note** Once an Azure Container Instance (ACI) is deployed into a subnet, you cannot change the subnet associated with it. This means that if you need to move an ACI to a different subnet, you will need to delete and redeploy the ACI in the new subnet.
 
 ## Contributing
 

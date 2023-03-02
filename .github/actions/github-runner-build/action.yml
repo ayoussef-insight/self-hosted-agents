@@ -1,5 +1,5 @@
-name: ADO Agent Build
-description: Deploys ACR, Builds ado agent container image and push to ACR
+name: Github Actions Runner Build
+description: Deploys ACR, Builds github actions runner container image and push to ACR
 
 inputs:
   AZURE_CREDENTIALS:

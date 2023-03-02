@@ -1,4 +1,4 @@
-Before submitting this PR, please make sure:
+Before submitting your PR, please make sure:
 
-- [ ] Docker container build and run successfully
+- [ ] Docker container builds and runs successfully
 - [ ] Agent on the docker container runs successfully

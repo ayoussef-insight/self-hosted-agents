@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 ubuntu:22.04
 
 LABEL author="Ahmed Youssef"
 LABEL name="github-runner-linux"
-LABEL description="Microsoft Girhub Self-Hosted Linux Runner"
+LABEL description="Github Self-Hosted Linux Actions Runner"
 LABEL base_image="ubuntu:22.04"
 LABEL runner_version="2.302.1"
 
@@ -54,7 +54,7 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microso
 && rm packages-microsoft-prod.deb
 
 # Install poweshell modules
-# RUN pwsh -c 'Install-Module -Name Az -Scope AllUsers -Force'
+RUN pwsh -c 'Install-Module -Name Az -Scope AllUsers -Force'
 
 # Clean apt-get installation packages
 RUN rm -rf /var/lib/apt/lists/* && apt-get clean

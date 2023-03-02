@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 ubuntu:22.04
 
 LABEL author="Ahmed Youssef"
 LABEL name="ado-agent-linux"
-LABEL description="Microsoft Azure DevOps Self-Hosted Linux Agent"
+LABEL description="Microsoft Azure DevOps Pipelines Self-Hosted Linux Agent"
 LABEL base_image="ubuntu:22.04"
 LABEL agent_version="2.217.2"
 
@@ -54,7 +54,7 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microso
 && rm packages-microsoft-prod.deb
 
 # Install poweshell modules
-# RUN pwsh -c 'Install-Module -Name Az -Scope AllUsers -Force'
+RUN pwsh -c 'Install-Module -Name Az -Scope AllUsers -Force'
 
 # Clean apt-get installation packages
 RUN rm -rf /var/lib/apt/lists/* && apt-get clean
