@@ -48,4 +48,5 @@ jobs:
                           imageServerUsername="$user" \
                           imageServerPassword="$password" \
                           instances=$(INSTANCES_COUNT) \
-                          environmentVariables="$environmentVariables"
+                          environmentVariables="$environmentVariables" \
+                          subnetResourceId="$(SUBNET_ID)"

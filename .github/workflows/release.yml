@@ -21,6 +21,7 @@ jobs:
       ACR_NAME: ${{ vars.ENV_ACR_NAME }}
       ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
       LNX_ACI_NAME: ${{ vars.ENV_LNX_ACI_NAME }}
+      SUBNET_ID: ${{ vars.ENV_SUBNET_ID }}
       LNX_IMAGE_NAME: github-runners/github-runner-linux
     steps:
       - name: Checkout code
@@ -43,3 +44,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           LNX_IMAGE_NAME: $LNX_IMAGE_NAME
           ACR_SERVER: $ACR_SERVER
+          SUBNET_ID: $SUBNET_ID
