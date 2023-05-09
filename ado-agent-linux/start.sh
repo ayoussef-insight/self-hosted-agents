@@ -49,7 +49,6 @@ print_header() {
 
 # Let the agent ignore the token env variables
 export VSO_AGENT_IGNORE=AZP_TOKEN,AZP_TOKEN_FILE
-export AZP_AGENT_USE_LEGACY_HTTP=true
 
 source ./env.sh
 
