@@ -32,6 +32,9 @@ inputs:
   INSTANCES_COUNT:
     description: Number of container instances
     default: '2'
+  SUBNET_ID:
+    description: Virtual network subnet resource Id.
+    default: ''
 
 runs:
   using: "composite"
@@ -65,8 +68,9 @@ runs:
                           imageServer=${{ inputs.ACR_SERVER }} \
                           imageServerUsername="$user" \
                           imageServerPassword="$password" \
-                          instances=${{ inputs.INSTANCES_COUNT}} \
-                          environmentVariables="$environmentVariables"
+                          instances=${{ inputs.INSTANCES_COUNT }} \
+                          environmentVariables="$environmentVariables" \
+                          subnetResourceId=${{ inputs.SUBNET_ID }}
               
 
     
