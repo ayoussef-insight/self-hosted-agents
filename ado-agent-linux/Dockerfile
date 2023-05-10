@@ -1,10 +1,11 @@
 FROM --platform=linux/amd64 ubuntu:22.04
 
+ARG AGENT_VERSION="3.220.0"
 LABEL author="Ahmed Youssef"
 LABEL name="ado-agent-linux"
 LABEL description="Microsoft Azure DevOps Pipelines Self-Hosted Linux Agent"
 LABEL base_image="ubuntu:22.04"
-LABEL agent_version="2.217.2"
+LABEL agent_version=$AGENT_VERSION
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
@@ -39,13 +40,8 @@ RUN apt-get install -y -qq --no-install-recommends \
         net-tools
 
 # Install Node
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - \
-&& sudo apt-get install -y nodejs
-
-# Install older version of libsssl to work with the current version of ado agent
-RUN wget -q "http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb" \
-&& sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb \
-&& rm libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+&& apt-get install -y nodejs
 
 # Install Azure CLI
 RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash
@@ -84,7 +80,7 @@ RUN rm -rf /var/lib/apt/lists/* && apt-get clean
 WORKDIR /azp
 
 # Install  ADO Agent
-RUN curl -LSs "https://vstsagentpackage.azureedge.net/agent/2.217.2/vsts-agent-linux-x64-2.217.2.tar.gz" | tar -xz
+RUN curl -LSs "https://vstsagentpackage.azureedge.net/agent/$AGENT_VERSION/vsts-agent-linux-x64-$AGENT_VERSION.tar.gz" | tar -xz
 
 # Run the agent
 COPY ./start.sh .
