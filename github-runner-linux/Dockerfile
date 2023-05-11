@@ -1,11 +1,11 @@
 FROM --platform=linux/amd64 ubuntu:22.04
 
-ARG AGENT_VERSION="2.302.1"
+ARG RUNNER_VERSION="2.302.1"
 LABEL author="Ahmed Youssef"
 LABEL name="github-runner-linux"
 LABEL description="Github Self-Hosted Linux Actions Runner"
 LABEL base_image="ubuntu:22.04"
-LABEL agent_version=$AGENT_VERSION
+LABEL RUNNER_VERSION=$RUNNER_VERSION
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
@@ -77,16 +77,23 @@ ENV PATH="${PATH}:${DOTNET_ROOT}:${DOTNET_ROOT}/tools"
 # Clean apt-get installation packages
 RUN rm -rf /var/lib/apt/lists/* && apt-get clean
 
-WORKDIR /github_runner
+WORKDIR /home/runner
 
-RUN curl -LSs "https://github.com/actions/runner/releases/download/v$AGENT_VERSION/actions-runner-linux-x64-$AGENT_VERSION.tar.gz" | tar -xz & wait $!
+RUN curl -LSs "https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz" | tar -xz & wait $!
 
 # install dependencies
 # RUN ./bin/installdependencies.sh
 
 # Run the agent
+RUN adduser --disabled-password --gecos "" --uid 1001 runner \
+    && groupadd docker --gid 123 \
+    && usermod -aG docker runner \
+    && usermod -aG sudo runner \
+    && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
+    && echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers
+
+
 COPY ./start.sh .
 RUN chmod +x start.sh
-RUN chown -R daemon /github_runner
-USER daemon
+USER runner
 ENTRYPOINT ["./start.sh"]
