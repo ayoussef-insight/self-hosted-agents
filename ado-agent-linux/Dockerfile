@@ -83,6 +83,15 @@ WORKDIR /azp
 RUN curl -LSs "https://vstsagentpackage.azureedge.net/agent/$AGENT_VERSION/vsts-agent-linux-x64-$AGENT_VERSION.tar.gz" | tar -xz
 
 # Run the agent
+RUN adduser --disabled-password --gecos "" --uid 1001 azp \
+    && groupadd docker --gid 123 \
+    && usermod -aG docker azp \
+    && usermod -aG sudo azp \
+    && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
+    && echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers
+
+
 COPY ./start.sh .
 RUN chmod +x start.sh
-ENTRYPOINT [ "./start.sh" ]
+USER azp
+ENTRYPOINT ["./start.sh"]

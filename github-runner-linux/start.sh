@@ -37,6 +37,7 @@ print_header "2. Configuring github actions runner..."
 ./config.sh \
   --unattended \
   --name $NAME \
+  --replace \
   --url https://github.com/$GITHUB_REPOSITORY \
   --token $TOKEN
 
