@@ -1,0 +1,51 @@
+binding:
+  preferTargetInfo: true
+  useQualifiedName: false
+  targetName:
+  - name
+  - ResourceName
+  targetType:
+    - type
+    - resourceType
+
+requires:
+  PSRule: '@pre >=2.4.0'
+  PSRule.Rules.Azure: '@pre >=1.19.2'
+
+include:
+  module:
+    - PSRule.Rules.Azure
+  path:
+    - './'
+    - '.ps-rule/'
+
+output:
+  as: Detail
+  banner: Default
+  culture: ['en-US']
+  encoding: Default
+  footer: Default
+  format: NUnit3
+  jobSummaryPath: null
+  outcome: All
+  sarifProblemsOnly: true
+  style: Detect
+
+execution:
+  notProcessedWarning: false
+  ruleSuppressed: Ignore
+
+input:
+  pathIgnore:
+    - bicepconfig.json
+
+configuration:
+  AZURE_PARAMETER_FILE_EXPANSION: false
+  AZURE_BICEP_FILE_EXPANSION: true
+
+rule:
+  includeLocal: true
+
+logging:
+  ruleFail: Warning
+  rulePass: Information

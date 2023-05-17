@@ -1,0 +1,16 @@
+{
+  "experimentalFeaturesEnabled": {
+    "userDefinedFunctions": false
+  },
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": false,
+      "rules": {
+        "explicit-values-for-loc-params": {
+          "level": "off"
+        }
+      }
+    }
+  }
+}

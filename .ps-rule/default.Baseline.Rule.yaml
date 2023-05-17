@@ -1,0 +1,9 @@
+# Synopsis: Default PSRule baseline
+apiVersion: github.com/microsoft/PSRule/v1
+kind: Baseline
+metadata:
+  name: Defaults
+spec:
+  rule:
+    exclude:
+    - Azure.Template.UseDescriptions

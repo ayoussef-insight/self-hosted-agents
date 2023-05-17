@@ -1,0 +1,98 @@
+name: PSRule Tests
+description: Run PSRule to test bicep infrastructure
+
+inputs:
+  TEMPLATE_NAME:
+    description: 'TEMPLATE_NAME'
+    required: true
+  INPUT_PATH:
+    description: 'INPUT_PATH'
+    required: true
+  OUTPUT_PATH:
+    description: 'OUTPUT_PATH'
+    required: true
+    default: ${{ github.workspace }}/${{ github.run_id }}/test_results
+  ERROR_ACTION:
+    description: 'ERROR_ACTION'
+    required: true
+    default: Stop
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install PSRule.Rules.Azure PS module
+      shell: pwsh
+      run: |
+        Install-Module -Name PSRule -Repository PSGallery -Scope CurrentUser -Force
+        Install-Module -Name PSRule.Rules.Azure -Repository PSGallery -Scope CurrentUser -Force
+
+    - name: PSRule validation - ${{ inputs.TEMPLATE_NAME }}
+      shell: pwsh
+      run: |
+        Assert-PSRule -InputPath ${{ inputs.INPUT_PATH }}/*.test.bicep `
+          -Path ${{ inputs.INPUT_PATH }}/ `
+          -OutputPath ${{ inputs.OUTPUT_PATH }}/test-results-psrule.csv `
+          -Module 'PSRule.Rules.Azure' `
+          -Baseline 'Defaults' `
+          -Option ${{ github.workspace }}/ps-rule.yaml `
+          -OutputFormat Csv `
+          -Style GitHubActions `
+          -ErrorAction ${{ inputs.ERROR_ACTION }}
+
+    # Reference: https://github.com/Azure/ResourceModules/blob/main/.github/actions/templates/validateModulePSRule/action.yml
+    - name: 'Parse CSV content'
+      if: always()
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          # Grouping task logs
+          Write-Output '::group::Parse CSV content'
+          # Load used functions
+          . (Join-Path $env:GITHUB_WORKSPACE '.github' 'actions' 'ps-rule' 'Set-PSRuleGitHubOutput.ps1')
+
+          # Populate parameter input
+          $ParameterInput = @{
+            inputFilePath           = "${{ inputs.OUTPUT_PATH }}/test-results-psrule.csv"
+            outputFilePath          = "${{ inputs.OUTPUT_PATH }}/test-results.md"
+            skipPassedRulesReport   = $false
+          }
+
+          Write-Verbose ('Set PS Rule Output with following parameters:`n{0}' -f (ConvertTo-Json $ParameterInput -Depth 10)) -Verbose
+
+          # Invoke Set PSRule Output Functionality
+          $null = Set-PSRuleGitHubOutput @ParameterInput
+
+          Write-Output '::endgroup::'
+
+    - name: 'Output to GitHub job summaries'
+      if: always()
+      shell: pwsh
+      run: |
+        # Grouping task logs
+        Write-Output '::group::Output to GitHub job summaries'
+
+        $mdPSRuleOutputFilePath = "${{ inputs.OUTPUT_PATH }}/test-results.md"
+
+        if (-not (Test-Path $mdPSRuleOutputFilePath)) {
+          Write-Warning ('Input file [{0}] not found. Please check if the previous task threw an error and try again.' -f $mdPSRuleOutputFilePath)
+          return ''
+        } else {
+          Get-Content $mdPSRuleOutputFilePath >> $env:GITHUB_STEP_SUMMARY
+          Write-Verbose ('Successfully printed out file [{0}] to Job Summaries' -f $mdPSRuleOutputFilePath) -Verbose
+        }
+
+        Write-Output '::endgroup::'
+
+    - name: Upload Test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: ${{ inputs.OUTPUT_PATH }}/test-results.md
+    
+
+
+   
+   
+    

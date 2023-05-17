@@ -9,9 +9,9 @@ build_src
 .idea
 .DS_Store
 .dotcloud
-*.test
 bundles/
 .hg/
 .git/
 *.local
 *.local.*
+.vscode
