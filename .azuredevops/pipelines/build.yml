@@ -32,6 +32,12 @@ jobs:
                 az group create --name $AZURE_RG --location $AZURE_LOCATION
             fi
 
+      - template: ps-rule.yaml
+        parameters:
+          templateName: 'ACR'
+          inputPath: $(ROOT)/.test
+          errorAction: stop
+
       - task: AzureCLI@2
         displayName: Deploy ACR
         inputs:

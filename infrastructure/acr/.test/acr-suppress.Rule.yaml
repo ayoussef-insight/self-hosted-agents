@@ -1,0 +1,16 @@
+# SuppressionGroups.Rule.yaml
+---
+# Synopsis: Ignore test objects by name.
+apiVersion: github.com/microsoft/PSRule/v1
+kind: SuppressionGroup
+metadata:
+  name: SuppressFalsePositive
+spec:
+  rule:
+  - Azure.ACR.AdminUser # TODO: Use Azure AD identities instead of using the registry admin user
+  if:
+    anyOf:
+    - name: '.'
+      in:
+      - crtest01
+

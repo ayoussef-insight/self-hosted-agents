@@ -1,0 +1,45 @@
+
+parameters:
+  - name: inputPath
+    displayName: Tests input path
+    type: string
+  - name: templateName
+    type: string
+  - name: outputpath
+    type: string
+    default: $(Build.ArtifactStagingDirectory)/tests
+  - name: condition
+    type: boolean
+    default: true
+  - name: errorAction
+    default: continue #stop
+
+steps:
+  - pwsh: |
+      Install-Module -Name PSRule -Repository PSGallery -Scope CurrentUser -Force
+      Install-Module -Name PSRule.Rules.Azure -Repository PSGallery -Scope CurrentUser -Force
+    displayName: Install PSRule.Rules.Azure PS module
+    condition: and(succeeded(), eq('${{ parameters.condition }}', 'True'))
+
+  - pwsh: |
+       Assert-PSRule -InputPath '${{ parameters.inputPath }}/*.test.bicep' `
+        -Path '${{ parameters.inputPath }}/' `
+        -OutputPath '${{ parameters.outputpath }}/test-template-psrule.xml' `
+        -Module 'PSRule.Rules.Azure' `
+        -Baseline 'Defaults' `
+        -Option '$(Build.SourcesDirectory)/ps-rule.yaml' `
+        -OutputFormat NUnit3 `
+        -Style Detect
+    displayName: PSRule validation - ${{ parameters.templateName }}
+    condition: and(succeeded(), eq('${{ parameters.condition }}', 'True'))
+    failOnStderr: false
+    errorActionPreference: ${{ parameters.errorAction }}
+
+  - task: PublishTestResults@2
+    displayName: 'Publish PSRule results - ${{ parameters.templateName}}'
+    condition: and(succeeded(), eq('${{ parameters.condition }}', 'True'))
+    inputs:
+      testRunTitle: 'PSRule-${{ parameters.templateName }}'
+      testRunner: NUnit
+      testResultsFiles: ${{ parameters.outputpath }}/test-template-psrule.xml
+      failTaskOnFailedTests: false

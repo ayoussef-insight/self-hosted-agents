@@ -1,0 +1,9 @@
+# Synopsis: psrule baseline for Management Group deployment
+apiVersion: github.com/microsoft/PSRule/v1
+kind: Baseline
+metadata:
+  name: Defaults
+spec:
+  rule:
+    exclude:
+    - Azure.Template.UseDescriptions

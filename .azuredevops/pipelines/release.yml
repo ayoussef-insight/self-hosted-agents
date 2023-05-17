@@ -20,6 +20,12 @@ jobs:
   - job: agent_aci
     displayName: Launch Agent Container Instance
     steps:
+      - template: ps-rule.yaml
+        parameters:
+          templateName: 'ACI'
+          inputPath: $(ROOT)/.test
+          errorAction: stop
+
       - task: AzureCLI@2
         displayName: Deploy Linux Agent ACI
         inputs:

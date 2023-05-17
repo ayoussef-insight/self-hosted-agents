@@ -28,6 +28,8 @@ param restartPolicy string = 'Always'
 param instances int = 1
 @description('Container environment variables. Array of name, value|secureValue')
 param environmentVariables array
+@description('Resource tags')
+param tags object = { Application: 'self-hosted' }
 
 var containerPrefix = 'self-hosted-'
 
@@ -40,6 +42,7 @@ var envVariables = [for e in environmentVariables: {
 resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
   name: name
   location: location
+  tags: tags
   properties: {
     containers: [for index in range(0, instances): {
       name: '${containerPrefix}${padLeft(index + 1, 3, '0')}'

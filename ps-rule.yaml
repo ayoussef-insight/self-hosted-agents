@@ -1,0 +1,56 @@
+binding:
+  preferTargetInfo: true
+  useQualifiedName: false
+  targetName:
+  - name
+  - ResourceName
+  targetType:
+    - type
+    - resourceType
+
+requires:
+  PSRule: '@pre >=2.4.0'
+  PSRule.Rules.Azure: '@pre >=1.19.2'
+
+# Use PSRule for Azure.
+include:
+  module:
+    - PSRule.Rules.Azure
+  path:
+    - './'
+    - '.ps-rule/'
+
+output:
+  as: Detail
+  banner: Default
+  culture: ['en-US']
+  encoding: Default
+  footer: Default
+  format: NUnit3
+  jobSummaryPath: null
+  outcome: All
+  sarifProblemsOnly: true
+  style: Detect
+
+execution:
+  notProcessedWarning: false
+  ruleSuppressed: Ignore
+
+input:
+  pathIgnore:
+    - bicepconfig.json
+
+configuration:
+  # Enable expansion of Azure Template files.
+  AZURE_PARAMETER_FILE_EXPANSION: false
+
+  # Enable expansion of Azure Bicep files.
+  AZURE_BICEP_FILE_EXPANSION: true
+
+rule:
+  # Enable custom rules that don't exist in the baseline
+  includeLocal: true
+
+logging:
+  ruleFail: Warning
+  rulePass: Information

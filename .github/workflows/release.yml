@@ -32,6 +32,12 @@ jobs:
         with:
           creds: ${{ secrets.ENV_AZURE_CREDENTIALS }}
 
+      - name: Run PSRule
+        uses: ./.github/actions/ps-rule
+        with:
+          TEMPLATE_NAME: ACI
+          INPUT_PATH: ${{ env.ACI_ROOT }}/.test
+
       - name: Deploy ACI
         uses: ./.github/actions/github-runner-deploy
         with:

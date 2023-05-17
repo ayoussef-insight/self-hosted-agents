@@ -44,6 +44,12 @@ jobs:
                 az group create --name $AZURE_RG --location $AZURE_LOCATION
             fi
 
+      - name: Run PSRule
+        uses: ./.github/actions/ps-rule
+        with:
+          TEMPLATE_NAME: ACR
+          INPUT_PATH: ${{ env.ACR_ROOT }}/.test
+
       - name: Deploy ACR
         uses: ./.github/actions/github-runner-build
         with:
