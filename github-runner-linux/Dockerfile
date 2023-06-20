@@ -43,15 +43,19 @@ RUN apt-get install -y -qq --no-install-recommends \
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
 && apt-get install -y nodejs
 
+# Install Yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
+&& echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list \
+&& apt-get install -y yarn
+
 # Install Azure CLI
 RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash
 
 # Install az extensions
 RUN az extension add --name managementpartner
 
-# Install azd (locked to 0.8.0-beta.2 as azd is still in beta)
-RUN curl -Lo install-azd.sh https://aka.ms/install-azd.sh
-RUN chmod +x ./install-azd.sh && ./install-azd.sh --version 0.8.0-beta.2
+# Install azd
+RUN curl -fsSL https://aka.ms/install-azd.sh | bash
 
 # Install bicep
 RUN curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64 \
@@ -68,10 +72,10 @@ RUN wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microso
 # Install poweshell modules
 RUN pwsh -c 'Install-Module -Name Az -Scope AllUsers -Force'
 
-# Install .NET 6.0
+# Install .NET LTS
 ENV DOTNET_ROOT="/etc/.dotnet"
 RUN curl -Lo dotnet-install.sh https://dot.net/v1/dotnet-install.sh
-RUN chmod +x ./dotnet-install.sh && ./dotnet-install.sh --install-dir ${DOTNET_ROOT} --architecture amd64 --channel 6.0 --version latest
+RUN chmod +x ./dotnet-install.sh && ./dotnet-install.sh --install-dir ${DOTNET_ROOT} --architecture amd64 --channel LTS --version latest
 ENV PATH="${PATH}:${DOTNET_ROOT}:${DOTNET_ROOT}/tools"
 
 # Clean apt-get installation packages
