@@ -30,6 +30,8 @@ param instances int = 1
 param environmentVariables array
 @description('Resource tags')
 param tags object = { Application: 'self-hosted' }
+@description('Custom DNS servers to use for private DNS. Array of strings holding IP address of DNS servers.')
+param dnsServers array
 
 var containerPrefix = 'self-hosted-'
 
@@ -62,6 +64,9 @@ resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@202
         }
       }
     }]
+    dnsConfig: empty(dnsServers) ? {} : {
+      nameServers: dnsServers
+    }
     imageRegistryCredentials: [
       {
         server: imageServer

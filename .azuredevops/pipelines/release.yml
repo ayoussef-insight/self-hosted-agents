@@ -43,6 +43,8 @@ jobs:
               {"name":"AZP_POOL","value":"$(AZP_LNX_POOL)"}
             ]'
 
+            dnsServers='$(DNS_SERVERS)'
+
             # deploy ACI
             az deployment group create \
               --resource-group $(AZURE_RG) \
@@ -55,4 +57,5 @@ jobs:
                           imageServerPassword="$password" \
                           instances=$(INSTANCES_COUNT) \
                           environmentVariables="$environmentVariables" \
+                          dnsServers="$dnsServers" \
                           subnetResourceId="$(SUBNET_ID)"
