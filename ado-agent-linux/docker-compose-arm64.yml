@@ -1,11 +1,11 @@
 version: '3.1'
 services:
   agent:
-    image: ado-agents/ado-agent-linux-amd64:latest
+    image: ado-agents/ado-agent-linux-arm64:latest
     build: 
       context: .
       args:
-        - ARCH=amd64
+        - ARCH=arm64
     env_file:
       - .env
     volumes:

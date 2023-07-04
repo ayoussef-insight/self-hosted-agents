@@ -22,7 +22,7 @@ jobs:
       ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
       LNX_ACI_NAME: ${{ vars.ENV_LNX_ACI_NAME }}
       SUBNET_ID: ${{ vars.ENV_SUBNET_ID }}
-      LNX_IMAGE_NAME: github-runners/github-runner-linux
+      LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

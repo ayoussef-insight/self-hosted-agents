@@ -1,8 +1,12 @@
 version: '3.1'
 services:
   runner:
-    image: github-runners/github-runner-linux:latest
-    build: .
+    image: github-runners/github-runner-linux-amd64:latest
+    build: 
+      context: .
+      args:
+        - ARCH=amd64
+        - RUNNER_VERSION=2.302.1
     env_file:
       - .env
     volumes:
