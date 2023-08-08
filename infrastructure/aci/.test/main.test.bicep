@@ -1,6 +1,5 @@
 targetScope = 'subscription'
 param location string = deployment().location
-param dnsServers array
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: 'rg-psrule-test'
@@ -27,9 +26,7 @@ module aciTests '../main.bicep' = {
         value: 'ais-linux-pool'
       }
     ]
-    dnsConfig: empty(dnsServers) ? {} : {
-      nameServers: dnsServers
-    }
+    dnsServers: []
     cpuCores: 1
     memoryInGb: 2
     subnetResourceId: resourceId('Microsoft.Network/VirtualNetworks/subnets', 'vnet-test-01', 'snet-test-01')
