@@ -35,6 +35,9 @@ inputs:
   SUBNET_ID:
     description: Virtual network subnet resource Id.
     default: ''
+  DNS_SERVERS:
+    description: Private DNS Servers to use for container instances.
+    default: '[]' 
 
 runs:
   using: "composite"
@@ -58,6 +61,8 @@ runs:
               {"name":"GITHUB_REPOSITORY","value":"${{ inputs.GITHUB_REPOSITORY }}"}
             ]'
 
+            dnsServers='${{ inputs.DNS_SERVERS }}'
+
             # deploy ACI
             az deployment group create \
               --resource-group ${{ inputs.AZURE_RG }} \
@@ -70,6 +75,7 @@ runs:
                           imageServerPassword="$password" \
                           instances=${{ inputs.INSTANCES_COUNT }} \
                           environmentVariables="$environmentVariables" \
+                          dnsServers="$dnsServers" \
                           subnetResourceId=${{ inputs.SUBNET_ID }}
               
 

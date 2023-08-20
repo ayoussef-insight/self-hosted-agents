@@ -100,6 +100,7 @@ Create build pipeline using an exisitng yaml file and select [.azuredevops/pipel
 - `ENV_AZP_PAT` Azure DevOps personal access token with the right permissions to allow the self-hosted agent to connect to Azure DevOps.
 - `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted agent image to.
 - `ENV_SUBNET_ID` The subnet resource Id for the container instance.
+- `ENV_DNS_SERVERS` A string array of private DNS servers to use. ACI does not inherit DNS from your virtual network. Example argument format - `["192.168.1.1", "192.168.1.2"]`. Supply empty array `[]` to use default Azure resolver.
 
 #### Run Build pipeline
 Run the build pipeline and when it is completed go to Azure portal and verify that the ACR is created and the agent image is published.
@@ -150,6 +151,7 @@ Replace <azure_subscription_id> with the subscription ID, <azure_tenant_id> with
 - `ENV_ACR_NAME` The name of the azure container registry.
 - `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted runner image to.
 - `ENV_SUBNET_ID` The subnet resource Id for the container instance.
+- `ENV_DNS_SERVERS` A string array of private DNS servers to use. ACI does not inherit DNS from your virtual network. Example argument format - `["192.168.1.1", "192.168.1.2"]`. Supply empty array `[]` to use default Azure resolver.
 
 
 #### Run Build workflow
