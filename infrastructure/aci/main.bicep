@@ -64,7 +64,7 @@ resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@202
         }
       }
     }]
-    dnsConfig: empty(dnsServers) ? {} : {
+    dnsConfig: empty(dnsServers) ? null : {
       nameServers: dnsServers
     }
     imageRegistryCredentials: [

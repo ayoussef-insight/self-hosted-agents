@@ -43,7 +43,7 @@ jobs:
               {"name":"AZP_POOL","value":"$(AZP_LNX_POOL)"}
             ]'
 
-            dnsServers='$(DNS_SERVERS)'
+            [ -n "$(DNS_SERVERS)" ] && dnsServers="$(DNS_SERVERS)" || dnsServers="[]"
 
             # deploy ACI
             az deployment group create \
