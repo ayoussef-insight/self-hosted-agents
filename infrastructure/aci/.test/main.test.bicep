@@ -26,6 +26,7 @@ module aciTests '../main.bicep' = {
         value: 'ais-linux-pool'
       }
     ]
+    dnsServers: []
     cpuCores: 1
     memoryInGb: 2
     subnetResourceId: resourceId('Microsoft.Network/VirtualNetworks/subnets', 'vnet-test-01', 'snet-test-01')
