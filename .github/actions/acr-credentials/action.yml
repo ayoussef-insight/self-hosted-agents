@@ -19,13 +19,11 @@ runs:
   steps:
     - name: Get registry credentials
       id: acr
-      uses: azure/CLI@v1
-      with:
-        azcliversion: latest
-        inlineScript: |
-            ACR_USERNAME=$(az acr credential show -n "${{ inputs.ACR_NAME }}" --query "username"  -o tsv)
-            echo ACR_USERNAME=$ACR_USERNAME >> $GITHUB_OUTPUT  
-            
-            ACR_PASSWORD=$(az acr credential show -n "${{ inputs.ACR_NAME }}" --query "passwords[0].value"  -o tsv)
-            echo "::add-mask::$ACR_PASSWORD"
-            echo ACR_PASSWORD=$ACR_PASSWORD >> $GITHUB_OUTPUT  
+      shell: pwsh
+      run: |
+          $ACR_USERNAME = (az acr credential show -n "${{ inputs.ACR_NAME }}" --query "username" -o tsv)
+          "ACR_USERNAME=$ACR_USERNAME" | Out-File "$env:GITHUB_OUTPUT" -Encoding utf8 -Append
+    
+          $ACR_PASSWORD = (az acr credential show -n "${{ inputs.ACR_NAME }}" --query "passwords[0].value" -o tsv)
+          Write-Host "::add-mask::$ACR_PASSWORD"
+          "ACR_PASSWORD=$ACR_PASSWORD" | Out-File "$env:GITHUB_OUTPUT" -Encoding utf8 -Append

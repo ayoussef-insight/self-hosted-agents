@@ -6,8 +6,15 @@ trigger:
     include:
       - infrastructure/aci
 
-pool:
-  vmImage: ubuntu-latest
+parameters:
+  - name: deployLinuxAgent
+    displayName: Deploy Linux Agent
+    type: boolean
+    default: true
+  - name: deployWindowsAgent
+    displayName: Deploy Windows Agent
+    type: boolean
+    default: true
 
 variables:
   - template: vars/env.yml
@@ -16,9 +23,12 @@ variables:
   - name: INSTANCES_COUNT
     value: 2
 
+pool:
+  vmImage: ubuntu-latest
+
 jobs:
-  - job: agent_aci
-    displayName: Launch Agent Container Instance
+  - job: test_infra
+    displayName: Test Infrastructure
     steps:
       - template: ps-rule.yaml
         parameters:
@@ -26,6 +36,11 @@ jobs:
           inputPath: $(ROOT)/.test
           errorAction: stop
 
+  - job: agent_lnx_aci
+    displayName: Launch Linux Agent Container Instance
+    dependsOn: test_infra
+    condition: and(succeeded(), eq('${{ parameters.deployLinuxAgent }}', 'true'))
+    steps:
       - task: AzureCLI@2
         displayName: Deploy Linux Agent ACI
         inputs:
@@ -52,10 +67,51 @@ jobs:
               --parameters $(ROOT)/main.parameters.json \
               --parameters name=$(LNX_ACI_NAME) \
                           image=$(LNX_IMAGE_NAME) \
+                          osType="Linux" \
                           imageServer=$(ACR_SERVER) \
                           imageServerUsername="$user" \
                           imageServerPassword="$password" \
                           instances=$(INSTANCES_COUNT) \
+                          environmentVariables="$environmentVariables" \
+                          dnsServers="$dnsServers" \
+                          subnetResourceId="$(SUBNET_ID)"
+  
+  - job: agent_win_aci
+    displayName: Launch Windows Agent Container Instance
+    dependsOn: test_infra
+    condition: and(succeeded(), eq('${{ parameters.deployWindowsAgent }}', 'true'))
+    steps:
+      - task: AzureCLI@2
+        displayName: Deploy Windows Agent ACI
+        inputs:
+          azureSubscription: $(AZURE_CONNECTION)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            # get the ACR password
+            user=$(ACR_NAME)
+            password=$(az acr credential show -n $user --query "passwords[0].value" -o tsv)
+
+            environmentVariables='[
+              {"name":"AZP_TOKEN","secureValue":"$(AZP_PAT)"},
+              {"name":"AZP_URL","value":"$(AZP_URL)"},
+              {"name":"AZP_POOL","value":"$(AZP_WIN_POOL)"}
+            ]'
+
+            [ -n "$(DNS_SERVERS)" ] && dnsServers="$(DNS_SERVERS)" || dnsServers="[]"
+
+            # deploy ACI
+            az deployment group create \
+              --resource-group $(AZURE_RG) \
+              --template-file $(ROOT)/main.bicep \
+              --parameters $(ROOT)/main.parameters.json \
+              --parameters name=$(WIN_ACI_NAME) \
+                          image=$(WIN_IMAGE_NAME) \
+                          osType="Windows" \
+                          imageServer=$(ACR_SERVER) \
+                          imageServerUsername="$user" \
+                          imageServerPassword="$password" \
+                          instances=1 \
                           environmentVariables="$environmentVariables" \
                           dnsServers="$dnsServers" \
                           subnetResourceId="$(SUBNET_ID)"

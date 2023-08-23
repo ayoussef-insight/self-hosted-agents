@@ -6,6 +6,7 @@ services:
       context: .
       args:
         - ARCH=amd64
+        - AGENT_VERSION=3.224.1
     env_file:
       - .env
     volumes:

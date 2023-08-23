@@ -6,24 +6,37 @@ on:
       - main
     paths:
       - github-runner-linux/**
+      - github-runner-win/**
       - infrastructure/acr/**
   workflow_dispatch:
-    branches:
-      - main
+    inputs:
+      buildLinuxRunner:
+        description: 'Build Linux Runner'
+        type: boolean
+        required: true
+        default: true
+      buildWindowsRunner:
+        description: 'Build Windows Runner'
+        type: boolean
+        required: true
+        default: true
+
+env:
+  AZURE_LOCATION: australiaeast
+  ACR_ROOT: ${{ github.workspace }}/infrastructure/acr
+  LNX_RUNNER_ROOT: ${{ github.workspace }}/github-runner-linux
+  WIN_RUNNER_ROOT: ${{ github.workspace }}/github-runner-win
+  LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64
+  WIN_IMAGE_NAME: github-runners/github-runner-win-amd64
+  IMAGE_VERSION: 1.0.0.${{ github.run_number }}
+  AZURE_RG: ${{ vars.ENV_AZURE_RG }}
+  ACR_NAME: ${{ vars.ENV_ACR_NAME }}
+  ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
 
 jobs:
-  deploy:
-    name: Deploy
+  deployInfra:
+    name: Deploy Infra
     runs-on: ubuntu-latest
-    env:
-      AZURE_LOCATION: australiaeast
-      ACR_ROOT: ${{ github.workspace }}/infrastructure/acr
-      LNX_RUNNER_ROOT: ${{ github.workspace }}/github-runner-linux
-      IMAGE_VERSION: 1.0.0.${{ github.run_number }}
-      AZURE_RG: ${{ vars.ENV_AZURE_RG }}
-      ACR_NAME: ${{ vars.ENV_ACR_NAME }}
-      ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
-      LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -51,13 +64,47 @@ jobs:
           INPUT_PATH: ${{ env.ACR_ROOT }}/.test
 
       - name: Deploy ACR
+        uses: ./.github/actions/deploy-acr
+        with:
+          AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+          ROOT: ${{ env.ACR_ROOT }}
+          AZURE_RG: ${{ env.AZURE_RG }}
+          ACR_NAME: ${{ env.ACR_NAME }}
+
+  publishLinux:
+    name: Publish Linux Image
+    runs-on: ubuntu-latest
+    needs: deployInfra
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || inputs.buildLinuxRunner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Runner
         uses: ./.github/actions/github-runner-build
         with:
           AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
-          ROOT: $ACR_ROOT
-          AZURE_RG: $AZURE_RG
-          ACR_NAME: $ACR_NAME
-          LNX_RUNNER_ROOT: $LNX_RUNNER_ROOT
-          LNX_IMAGE_NAME: $LNX_IMAGE_NAME
-          IMAGE_VERSION: $IMAGE_VERSION
-          ACR_SERVER: $ACR_SERVER
+          ACR_NAME: ${{ env.ACR_NAME }}
+          RUNNER_ROOT: ${{ env.LNX_RUNNER_ROOT }}
+          IMAGE_NAME: ${{ env.LNX_IMAGE_NAME }}
+          IMAGE_VERSION: ${{ env.IMAGE_VERSION }}
+          ACR_SERVER: ${{ env.ACR_SERVER }}
+
+  publishWindows:
+    name: Publish Windows Image
+    runs-on: windows-latest
+    needs: deployInfra
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || inputs.buildWindowsRunner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Runner
+        uses: ./.github/actions/github-runner-build
+        with:
+          AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+          ACR_NAME: ${{ env.ACR_NAME }}
+          RUNNER_ROOT: ${{ env.WIN_RUNNER_ROOT }}
+          IMAGE_NAME: ${{ env.WIN_IMAGE_NAME }}
+          IMAGE_VERSION: ${{ env.IMAGE_VERSION }}
+          ACR_SERVER: ${{ env.ACR_SERVER }}

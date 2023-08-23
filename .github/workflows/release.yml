@@ -7,23 +7,35 @@ on:
     paths:
       - infrastructure/aci/**
   workflow_dispatch:
-    branches:
-      - main
+    inputs:
+      deployLinuxRunner:
+        description: 'Deploy Linux Runner'
+        type: boolean
+        required: true
+        default: true
+      deployWindowsRunner:
+        description: 'Deploy Windows Runner'
+        type: boolean
+        required: true
+        default: true
+
+env:
+  ACI_ROOT: ${{ github.workspace }}/infrastructure/aci
+  AZURE_LOCATION: australiaeast
+  AZURE_RG: ${{ vars.ENV_AZURE_RG }}
+  ACR_NAME: ${{ vars.ENV_ACR_NAME }}
+  ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
+  SUBNET_ID: ${{ vars.ENV_SUBNET_ID }}
+  DNS_SERVERS: ${{ vars.ENV_DNS_SERVERS }}
+  LNX_ACI_NAME: ${{ vars.ENV_LNX_ACI_NAME }}
+  WIN_ACI_NAME: ${{ vars.ENV_WIN_ACI_NAME }}
+  LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64:latest
+  WIN_IMAGE_NAME: github-runners/github-runner-win-amd64:latest
 
 jobs:
-  deploy:
-    name: Deploy
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
-    env:
-      AZURE_LOCATION: australiaeast
-      ACI_ROOT: ${{ github.workspace }}/infrastructure/aci
-      AZURE_RG: ${{ vars.ENV_AZURE_RG }}
-      ACR_NAME: ${{ vars.ENV_ACR_NAME }}
-      ACR_SERVER: ${{ vars.ENV_ACR_NAME }}.azurecr.io
-      LNX_ACI_NAME: ${{ vars.ENV_LNX_ACI_NAME }}
-      SUBNET_ID: ${{ vars.ENV_SUBNET_ID }}
-      DNS_SERVERS: ${{ vars.ENV_DNS_SERVERS }}
-      LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -39,17 +51,53 @@ jobs:
           TEMPLATE_NAME: ACI
           INPUT_PATH: ${{ env.ACI_ROOT }}/.test
 
+  deployLinux:
+    name: Deploy Linux Runner
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || inputs.deployLinuxRunner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Deploy ACI
         uses: ./.github/actions/github-runner-deploy
         with:
           AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
-          ROOT: $ACI_ROOT
-          AZURE_RG: $AZURE_RG
-          ACR_NAME: $ACR_NAME
-          LNX_ACI_NAME: $LNX_ACI_NAME
+          ROOT: ${{ env.ACI_ROOT }}
+          AZURE_RG: ${{ env.AZURE_RG }}
+          ACR_NAME: ${{ env.ACR_NAME }}
+          ACI_NAME: ${{ env.LNX_ACI_NAME }}
+          IMAGE_NAME: ${{ env.LNX_IMAGE_NAME }}
           GITHUB_TOKEN: ${{ secrets.ENV_GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          LNX_IMAGE_NAME: $LNX_IMAGE_NAME
-          ACR_SERVER: $ACR_SERVER
-          SUBNET_ID: $SUBNET_ID
-          DNS_SERVERS: $DNS_SERVERS
+          ACR_SERVER: ${{ env.ACR_SERVER }}
+          SUBNET_ID: ${{ env.SUBNET_ID }}
+          DNS_SERVERS: ${{ env.DNS_SERVERS }}
+          OS: Linux
+  
+  deployWindows:
+    name: Deploy Windows Runner
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || inputs.deployWindowsRunner }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy ACI
+        uses: ./.github/actions/github-runner-deploy
+        with:
+          AZURE_CREDENTIALS: ${{ secrets.ENV_AZURE_CREDENTIALS }}
+          ROOT: ${{ env.ACI_ROOT }}
+          AZURE_RG: ${{ env.AZURE_RG }}
+          ACR_NAME: ${{ env.ACR_NAME }}
+          ACI_NAME: ${{ env.WIN_ACI_NAME }}
+          IMAGE_NAME: ${{ env.WIN_IMAGE_NAME }}
+          GITHUB_TOKEN: ${{ secrets.ENV_GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ACR_SERVER: ${{ env.ACR_SERVER }}
+          SUBNET_ID: ${{ env.SUBNET_ID }}
+          DNS_SERVERS: ${{ env.DNS_SERVERS }}
+          OS: Windows
+          INSTANCES_COUNT: 1

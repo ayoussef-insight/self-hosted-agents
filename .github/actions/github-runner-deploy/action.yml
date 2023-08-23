@@ -14,18 +14,18 @@ inputs:
   ACR_NAME:
     required: true
     description: ACR_NAME
-  LNX_ACI_NAME:
+  ACI_NAME:
     required: true
-    description: LNX_ACI_NAME
+    description: ACI_NAME
   GITHUB_TOKEN:
     required: true
     description: GITHUB_TOKEN
   GITHUB_REPOSITORY:
     required: true
     description: GITHUB_REPOSITORY
-  LNX_IMAGE_NAME:
+  IMAGE_NAME:
     required: true
-    description: LNX_IMAGE_NAME
+    description: IMAGE_NAME
   ACR_SERVER:
     required: true
     description: ACR_SERVER
@@ -38,6 +38,9 @@ inputs:
   DNS_SERVERS:
     description: Private DNS Servers to use for container instances.
     default: '[]' 
+  OS:
+    description: OS type of the container instance.
+    default: 'Linux'
 
 runs:
   using: "composite"
@@ -65,11 +68,13 @@ runs:
 
             # deploy ACI
             az deployment group create \
+              --name "deploy-${{ inputs.ACI_NAME }}" \
               --resource-group ${{ inputs.AZURE_RG }} \
               --template-file ${{ inputs.ROOT }}/main.bicep \
               --parameters ${{ inputs.ROOT }}/main.parameters.json \
-              --parameters name=${{ inputs.LNX_ACI_NAME }} \
-                          image=${{ inputs.LNX_IMAGE_NAME }} \
+              --parameters name=${{ inputs.ACI_NAME }} \
+                          image=${{ inputs.IMAGE_NAME }} \
+                          osType=${{ inputs.OS }} \
                           imageServer=${{ inputs.ACR_SERVER }} \
                           imageServerUsername="$user" \
                           imageServerPassword="$password" \

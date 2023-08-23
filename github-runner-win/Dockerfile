@@ -4,12 +4,12 @@ ARG DOTNET_VERSION=4.8
 # 3.5 for .NET framework 4.7.2, 3.5, 3.0, 2.5
 FROM mcr.microsoft.com/dotnet/framework/sdk:${DOTNET_VERSION}
 
-ARG AGENT_VERSION
+ARG RUNNER_VERSION
 LABEL author="Ahmed Youssef"
-LABEL name="ado-agent-win"
-LABEL description="Microsoft Azure DevOps Pipelines Self-Hosted Windows Agent"
+LABEL name="github-runner-win"
+LABEL description="Github Self-Hosted Windows Actions Runner"
 LABEL base_image="win-%DOTNET_VERSION%"
-LABEL agent_version=$AGENT_VERSION
+LABEL RUNNER_VERSION=$RUNNER_VERSION
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;"]
 
@@ -61,13 +61,13 @@ RUN npm install --global yarn
 # Cleanup Az
 RUN $AzDataPath = $env:USERPROFILE + '\.azure'; Remove-Item -Path $AzDataPath -Recurse
 
-WORKDIR /azp
+WORKDIR /actions-runner
 
 # Download the Agent
-RUN $agentUrl = 'https://vstsagentpackage.azureedge.net/agent/' + $env:AGENT_VERSION + '/vsts-agent-win-x64-' + $env:AGENT_VERSION + '.zip'; \
-    (New-Object Net.WebClient).DownloadFile($agentUrl, '.\vsts-agent.zip'); \
-    Expand-Archive -Path .\vsts-agent.zip -DestinationPath .\ -Force; \
-    Remove-Item .\vsts-agent.zip;
+RUN $agentUrl = 'https://github.com/actions/runner/releases/download/v' + $env:RUNNER_VERSION + '/actions-runner-win-x64-' + $env:RUNNER_VERSION + '.zip'; \
+    (New-Object Net.WebClient).DownloadFile($agentUrl, '.\actions-runner.zip'); \
+    Expand-Archive -Path .\actions-runner.zip -DestinationPath .\ -Force; \
+    Remove-Item .\actions-runner.zip;
 
 COPY start.ps1 .
 

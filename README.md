@@ -30,6 +30,8 @@ The first step to create a hosted agent is to build the docker image which conta
 
 The second step is to create an Azure Container Instance (ACI) and use the agent Docker image created in the previous step. The necessary environment variables should be passed to the container instance. This will create and run a container that hosts the agent.
 
+**Note** Multi-container groups currently support only Linux containers. For Windows containers, Azure Container Instances only supports deployment of a single container instance. [See more](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups)
+
 ```mermaid
 flowchart LR
     subgraph build [Build]
