@@ -20,7 +20,7 @@ variables:
   - template: vars/env.yml
   - name: ROOT
     value: $(Build.SourcesDirectory)/infrastructure/aci
-  - name: INSTANCES_COUNT
+  - name: LNX_INSTANCES_COUNT
     value: 2
 
 pool:
@@ -62,6 +62,7 @@ jobs:
 
             # deploy ACI
             az deployment group create \
+              --name deploy-$(LNX_ACI_NAME) \
               --resource-group $(AZURE_RG) \
               --template-file $(ROOT)/main.bicep \
               --parameters $(ROOT)/main.parameters.json \
@@ -71,7 +72,7 @@ jobs:
                           imageServer=$(ACR_SERVER) \
                           imageServerUsername="$user" \
                           imageServerPassword="$password" \
-                          instances=$(INSTANCES_COUNT) \
+                          instances=$(LNX_INSTANCES_COUNT) \
                           environmentVariables="$environmentVariables" \
                           dnsServers="$dnsServers" \
                           subnetResourceId="$(SUBNET_ID)"
@@ -102,6 +103,7 @@ jobs:
 
             # deploy ACI
             az deployment group create \
+              --name deploy-$(WIN_ACI_NAME) \
               --resource-group $(AZURE_RG) \
               --template-file $(ROOT)/main.bicep \
               --parameters $(ROOT)/main.parameters.json \
