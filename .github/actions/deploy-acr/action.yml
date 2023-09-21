@@ -1,0 +1,36 @@
+name: Deploys ACR
+description: Deploys Azure Container Registry Resource
+
+inputs:
+  AZURE_CREDENTIALS:
+    description: 'AZURE_CREDENTIALS'
+    required: true
+  ACR_NAME:
+    description: 'ACR_NAME'
+    required: true
+  AZURE_RG:
+    description: 'AZURE_RG'
+    required: true
+  ROOT:
+    description: 'ROOT'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ inputs.AZURE_CREDENTIALS }}
+
+    - name: Deploy ACR
+      uses: azure/CLI@v1
+      with:
+        azcliversion: latest
+        inlineScript: |
+              az deployment group create  \
+              --name "deploy-${{ inputs.ACR_NAME }}" \
+              --resource-group ${{ inputs.AZURE_RG }} \
+              --template-file ${{ inputs.ROOT }}/main.bicep \
+              --parameters ${{ inputs.ROOT }}/main.parameters.json \
+              --parameters acrName=${{ inputs.ACR_NAME }}

@@ -5,10 +5,18 @@ trigger:
   paths:
     include:
       - ado-agent-linux
+      - ado-agent-win
       - infrastructure/acr
 
-pool:
-  vmImage: ubuntu-latest
+parameters:
+  - name: buildLinuxAgent
+    displayName: Build Linux Agent
+    type: boolean
+    default: true
+  - name: buildWindowsAgent
+    displayName: Build Windows Agent
+    type: boolean
+    default: true
 
 variables:
   - template: vars/env.yml
@@ -18,6 +26,8 @@ variables:
 jobs:
   - job: infra
     displayName: Deploy Infrastructure
+    pool:
+      vmImage: ubuntu-latest
     steps:
       - task: AzureCLI@2
         displayName: Create RG
@@ -46,6 +56,7 @@ jobs:
           scriptLocation: inlineScript
           inlineScript: |
             az deployment group create  `
+            --name deploy-$(ACR_NAME) `
             --resource-group $(AZURE_RG) `
             --template-file $(ROOT)/main.bicep `
             --parameters $(ROOT)/main.parameters.json `
@@ -54,6 +65,9 @@ jobs:
   - job: agent_linux
     displayName: Build & Publish Linux Agent to ACR
     dependsOn: infra
+    condition: and(succeeded(), eq('${{ parameters.buildLinuxAgent }}', 'true'))
+    pool:
+      vmImage: ubuntu-latest
     steps:
       - task: DockerCompose@0
         displayName: Build docker image
@@ -62,7 +76,7 @@ jobs:
           azureSubscriptionEndpoint: $(AZURE_CONNECTION)
           azureContainerRegistry: $(ACR_SERVER)
           dockerComposeFile: $(LNX_AGENT_ROOT)/docker-compose.yml
-          projectName: $(PROJECT_NAME)
+          projectName: $(LNX_PROJECT_NAME)
           qualifyImageNames: true
           additionalImageTags: $(IMAGE_VERSION)
           includeLatestTag: true
@@ -74,7 +88,38 @@ jobs:
           azureSubscriptionEndpoint: $(AZURE_CONNECTION)
           azureContainerRegistry: $(ACR_SERVER)
           dockerComposeFile: $(LNX_AGENT_ROOT)/docker-compose.yml
-          projectName: $(PROJECT_NAME)
+          projectName: $(LNX_PROJECT_NAME)
+          qualifyImageNames: true
+          additionalImageTags: $(IMAGE_VERSION)
+          includeLatestTag: true
+
+  - job: agent_windows
+    displayName: Build & Publish Windows Agent to ACR
+    dependsOn: infra
+    condition: and(succeeded(), eq('${{ parameters.buildWindowsAgent }}', 'true'))
+    pool:
+      vmImage: windows-latest
+    steps:
+      - task: DockerCompose@0
+        displayName: Build docker image
+        inputs:
+          action: Build services
+          azureSubscriptionEndpoint: $(AZURE_CONNECTION)
+          azureContainerRegistry: $(ACR_SERVER)
+          dockerComposeFile: $(WIN_AGENT_ROOT)/docker-compose.yml
+          projectName: $(WIN_PROJECT_NAME)
+          qualifyImageNames: true
+          additionalImageTags: $(IMAGE_VERSION)
+          includeLatestTag: true
+
+      - task: DockerCompose@0
+        displayName: Push image to ACR
+        inputs:
+          action: Push services
+          azureSubscriptionEndpoint: $(AZURE_CONNECTION)
+          azureContainerRegistry: $(ACR_SERVER)
+          dockerComposeFile: $(WIN_AGENT_ROOT)/docker-compose.yml
+          projectName: $(WIN_PROJECT_NAME)
           qualifyImageNames: true
           additionalImageTags: $(IMAGE_VERSION)
           includeLatestTag: true

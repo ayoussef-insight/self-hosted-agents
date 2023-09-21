@@ -1,5 +1,5 @@
 name: Github Actions Runner Build
-description: Deploys ACR, Builds github actions runner container image and push to ACR
+description: Builds github actions runner container image and push to ACR
 
 inputs:
   AZURE_CREDENTIALS:
@@ -8,18 +8,12 @@ inputs:
   ACR_NAME:
     description: 'ACR_NAME'
     required: true
-  AZURE_RG:
-    description: 'AZURE_RG'
+  RUNNER_ROOT:
+    description: 'RUNNER_ROOT'
     required: true
-  ROOT:
-    description: 'ROOT'
+  IMAGE_NAME:
     required: true
-  LNX_RUNNER_ROOT:
-    description: 'LNX_RUNNER_ROOT'
-    required: true
-  LNX_IMAGE_NAME:
-    required: true
-    description: LNX_IMAGE_NAME    
+    description: IMAGE_NAME    
   IMAGE_VERSION:
     description: 'IMAGE_VERSION'
     required: true
@@ -35,17 +29,6 @@ runs:
       with:
         creds: ${{ inputs.AZURE_CREDENTIALS }}
 
-    - name: Deploy ACR
-      uses: azure/CLI@v1
-      with:
-        azcliversion: latest
-        inlineScript: |
-              az deployment group create  \
-              --resource-group ${{ inputs.AZURE_RG }} \
-              --template-file ${{ inputs.ROOT }}/main.bicep \
-              --parameters ${{ inputs.ROOT }}/main.parameters.json \
-              --parameters acrName=${{ inputs.ACR_NAME }}
-
     - name: Get registry credentials
       id: acr_credentials
       uses: ./.github/actions/acr-credentials
@@ -53,14 +36,14 @@ runs:
         ACR_NAME: ${{ inputs.ACR_NAME }}
     
     - name: 'Docker login'
-      shell: bash
+      shell: pwsh
       run: docker login ${{ inputs.ACR_SERVER }} -u ${{ steps.acr_credentials.outputs.ACR_USERNAME }} -p ${{ steps.acr_credentials.outputs.ACR_PASSWORD }}
 
     - name: 'Build & Push image'
-      shell: bash
+      shell: pwsh
       run: |
-          cd ${{ inputs.LNX_RUNNER_ROOT }}
+          cd ${{ inputs.RUNNER_ROOT }}
           docker-compose up --build --detach
-          docker tag ${{ inputs.LNX_IMAGE_NAME }}:latest ${{ inputs.ACR_SERVER }}/${{ inputs.LNX_IMAGE_NAME }}:${{ inputs.IMAGE_VERSION }}
-          docker tag ${{ inputs.LNX_IMAGE_NAME }}:latest ${{ inputs.ACR_SERVER }}/${{ inputs.LNX_IMAGE_NAME }}:latest
-          docker image push --all-tags ${{ inputs.ACR_SERVER }}/${{ inputs.LNX_IMAGE_NAME }}
+          docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.ACR_SERVER }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_VERSION }}
+          docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.ACR_SERVER }}/${{ inputs.IMAGE_NAME }}:latest
+          docker image push --all-tags ${{ inputs.ACR_SERVER }}/${{ inputs.IMAGE_NAME }}

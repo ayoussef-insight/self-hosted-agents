@@ -30,6 +30,8 @@ The first step to create a hosted agent is to build the docker image which conta
 
 The second step is to create an Azure Container Instance (ACI) and use the agent Docker image created in the previous step. The necessary environment variables should be passed to the container instance. This will create and run a container that hosts the agent.
 
+**Note** Multi-container groups currently support only Linux containers. For Windows containers, Azure Container Instances only supports deployment of a single container instance. [See more](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups)
+
 ```mermaid
 flowchart LR
     subgraph build [Build]
@@ -96,9 +98,11 @@ Create build pipeline using an exisitng yaml file and select [.azuredevops/pipel
 - `ENV_AZURE_CONNECTION` The name of the azure service connection
 - `ENV_AZURE_RG` The name of the resource group.
 - `ENV_ACR_NAME` The name of the azure container registry.
-- `ENV_AZP_LNX_POOL` The name of the Azure DevOps agent pool to deploy the self-hosted agents to.
+- `ENV_AZP_LNX_POOL` The name of the Azure DevOps agent pool to deploy the linux self-hosted agents to.
+- `ENV_AZP_WIN_POOL` The name of the Azure DevOps agent pool to deploy the windows self-hosted agents to.
 - `ENV_AZP_PAT` Azure DevOps personal access token with the right permissions to allow the self-hosted agent to connect to Azure DevOps.
-- `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted agent image to.
+- `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the linux self-hosted agent image to.
+- `ENV_WIN_ACI_NAME` The name of the Azure Container Instance to deploy the windows self-hosted agent image to.
 - `ENV_SUBNET_ID` The subnet resource Id for the container instance.
 - `ENV_DNS_SERVERS` A string array of private DNS servers to use. ACI does not inherit DNS from your virtual network. Example argument format - `["192.168.1.1", "192.168.1.2"]`. Supply empty array `[]` to use default Azure resolver.
 
@@ -149,7 +153,8 @@ Replace <azure_subscription_id> with the subscription ID, <azure_tenant_id> with
 **Variables**
 - `ENV_AZURE_RG` The name of the resource group.
 - `ENV_ACR_NAME` The name of the azure container registry.
-- `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the self-hosted runner image to.
+- `ENV_LNX_ACI_NAME` The name of the Azure Container Instance to deploy the linux self-hosted runner image to.
+- `ENV_WIN_ACI_NAME` The name of the Azure Container Instance to deploy the windows self-hosted runner image to.
 - `ENV_SUBNET_ID` The subnet resource Id for the container instance.
 - `ENV_DNS_SERVERS` A string array of private DNS servers to use. ACI does not inherit DNS from your virtual network. Example argument format - `["192.168.1.1", "192.168.1.2"]`. Supply empty array `[]` to use default Azure resolver.
 

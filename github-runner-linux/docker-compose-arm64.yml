@@ -6,7 +6,7 @@ services:
       context: .
       args:
         - ARCH=arm64
-        - RUNNER_VERSION=2.302.1
+        - RUNNER_VERSION=2.308.0
     env_file:
       - .env
     volumes:

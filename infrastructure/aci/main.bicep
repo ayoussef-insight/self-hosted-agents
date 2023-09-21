@@ -17,6 +17,9 @@ param subnetResourceId string = ''
 param cpuCores int = 1
 @description('The amount of memory to allocate to the container in gigabytes.')
 param memoryInGb int = 2
+@description('OS type')
+@allowed(['Linux', 'Windows'])
+param osType string = 'Linux'
 @description('The behavior of Azure runtime if container has stopped.')
 @allowed([
   'Always'
@@ -24,7 +27,7 @@ param memoryInGb int = 2
   'OnFailure'
 ])
 param restartPolicy string = 'Always'
-@description('Number of container instances deploy')
+@description('Number of linux container instances deploy. Note: Multi-container groups currently support only Linux containers. For Windows containers, Azure Container Instances only supports deployment of a single container instance.')
 param instances int = 1
 @description('Container environment variables. Array of name, value|secureValue')
 param environmentVariables array
@@ -33,7 +36,8 @@ param tags object = { Application: 'self-hosted' }
 @description('Custom DNS servers to use for private DNS. Array of strings holding IP address of DNS servers.')
 param dnsServers array
 
-var containerPrefix = 'self-hosted-'
+var osAbbreviation = osType == 'Linux' ? 'lnx' : 'win'
+var containerPrefix = 'selfhosted-${osAbbreviation}-'
 
 var envVariables = [for e in environmentVariables: {
   name: e.name
@@ -53,7 +57,7 @@ resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@202
         environmentVariables: concat(envVariables, [
             {
               name: 'NAME'
-              value: '${containerPrefix}${padLeft(index + 1, 3, '0')}'
+              value: '${containerPrefix}${padLeft(index + 1, 2, '0')}'
             }
           ])
         resources: {
@@ -74,7 +78,7 @@ resource containerGroupResource 'Microsoft.ContainerInstance/containerGroups@202
         password: imageServerPassword
       }
     ]
-    osType: 'Linux'
+    osType: osType
     restartPolicy: restartPolicy
     subnetIds: empty(subnetResourceId) ? [] : [
       {
