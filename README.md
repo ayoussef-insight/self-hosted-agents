@@ -14,11 +14,11 @@ This project provides a complete solution for creating and deploying a self-host
 
 ### ADO Pipelines Agent Linux Container
 
-Read [ado-agent-linux/README.md](ado-agent-linux/README.md) for more.
+Read [src/images/ado-agent-linux/README.md](src/images/ado-agent-linux/README.md) for more.
 
 ### Github Actions Runner Linux Container
 
-Read [github-runner-linux/README.md](github-runner-linux/README.md) for more.
+Read [src/images/github-runner-linux/README.md](src/images/github-runner-linux/README.md) for more.
 
 ## Introduction
 
@@ -168,7 +168,7 @@ Run the "Deploy Actions Runner workflow" and when it is completed go to the repo
 ## Virtual Network
 Running self-hosted agents/runners inside a VNet allows pipelines jobs to access private resources inside the VNet. This can be particularly useful when deploying applications that require access to private databases, file shares, or other resources that are only accessible from within the VNet. By running the agents/runners inside the VNet, you can ensure that the pipeline jobs have access to these resources without exposing them to the public internet.
 
-To allow running Azure Container Instances (ACI) inside a VNet, you need to create a subnet specifically for the ACI. The subnet must be delegated to Azure Container Instances, which allows Azure to manage the underlying infrastructure for the ACI. To delegate the subnet, you need to configure the subnet properties to enable the "Microsoft.ContainerInstance/containerGroups" delegation. Once the delegation is enabled, you can pass the ACI subnet resource id to the [infrastructure/aci/main.bicep](infrastructure/aci/main.bicep) `subnetResourceId` parameter and run the release pipeline/workflow.
+To allow running Azure Container Instances (ACI) inside a VNet, you need to create a subnet specifically for the ACI. The subnet must be delegated to Azure Container Instances, which allows Azure to manage the underlying infrastructure for the ACI. To delegate the subnet, you need to configure the subnet properties to enable the "Microsoft.ContainerInstance/containerGroups" delegation. Once the delegation is enabled, you can pass the ACI subnet resource id to the [src/infrastructure/aci/main.bicep](src/infrastructure/aci/main.bicep) `subnetResourceId` parameter and run the release pipeline/workflow.
 
 **Note** Once an Azure Container Instance (ACI) is deployed into a subnet, you cannot change the subnet associated with it. This means that if you need to move an ACI to a different subnet, you will need to delete and redeploy the ACI in the new subnet.
 

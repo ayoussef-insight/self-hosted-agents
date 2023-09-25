@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths:
-      - github-runner-linux/**
-      - github-runner-win/**
-      - infrastructure/acr/**
+      - src/images/github-runner-linux/**
+      - src/images/github-runner-win/**
+      - src/infrastructure/acr/**
   workflow_dispatch:
     inputs:
       buildLinuxRunner:
@@ -23,9 +23,9 @@ on:
 
 env:
   AZURE_LOCATION: australiaeast
-  ACR_ROOT: ${{ github.workspace }}/infrastructure/acr
-  LNX_RUNNER_ROOT: ${{ github.workspace }}/github-runner-linux
-  WIN_RUNNER_ROOT: ${{ github.workspace }}/github-runner-win
+  ACR_ROOT: ${{ github.workspace }}/src/infrastructure/acr
+  LNX_RUNNER_ROOT: ${{ github.workspace }}/src/images/github-runner-linux
+  WIN_RUNNER_ROOT: ${{ github.workspace }}/src/images/github-runner-win
   LNX_IMAGE_NAME: github-runners/github-runner-linux-amd64
   WIN_IMAGE_NAME: github-runners/github-runner-win-amd64
   IMAGE_VERSION: 1.0.0.${{ github.run_number }}

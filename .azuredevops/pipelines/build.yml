@@ -4,9 +4,9 @@ trigger:
       - main
   paths:
     include:
-      - ado-agent-linux
-      - ado-agent-win
-      - infrastructure/acr
+      - src/images/ado-agent-linux
+      - src/images/ado-agent-win
+      - src/infrastructure/acr
 
 parameters:
   - name: buildLinuxAgent
@@ -21,7 +21,7 @@ parameters:
 variables:
   - template: vars/env.yml
   - name: ROOT
-    value: $(Build.SourcesDirectory)/infrastructure/acr
+    value: $(Build.SourcesDirectory)/src/infrastructure/acr
 
 jobs:
   - job: infra

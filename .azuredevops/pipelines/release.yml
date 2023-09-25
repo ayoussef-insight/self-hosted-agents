@@ -4,7 +4,7 @@ trigger:
       - main
   paths:
     include:
-      - infrastructure/aci
+      - src/infrastructure/aci
 
 parameters:
   - name: deployLinuxAgent
@@ -19,7 +19,7 @@ parameters:
 variables:
   - template: vars/env.yml
   - name: ROOT
-    value: $(Build.SourcesDirectory)/infrastructure/aci
+    value: $(Build.SourcesDirectory)/src/infrastructure/aci
   - name: LNX_INSTANCES_COUNT
     value: 2
 

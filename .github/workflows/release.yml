@@ -20,7 +20,7 @@ on:
         default: true
 
 env:
-  ACI_ROOT: ${{ github.workspace }}/infrastructure/aci
+  ACI_ROOT: ${{ github.workspace }}/src/infrastructure/aci
   AZURE_LOCATION: australiaeast
   AZURE_RG: ${{ vars.ENV_AZURE_RG }}
   ACR_NAME: ${{ vars.ENV_ACR_NAME }}
