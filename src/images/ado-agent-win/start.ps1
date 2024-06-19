@@ -27,7 +27,7 @@ try
   Write-Host "1. Configuring Azure Pipelines agent..." -ForegroundColor Cyan
 
   .\config.cmd --unattended `
-    --agent "$(if (Test-Path Env:NAME) { ${Env:NAME} } else { hostname })" `
+    --agent "$(if (Test-Path Env:NAME) { ${Env:NAME} } else { ${Env:COMPUTERNAME} })" `
     --url "$(${Env:AZP_URL})" `
     --auth PAT `
     --token "$(Get-Content ${Env:AZP_TOKEN_FILE})" `

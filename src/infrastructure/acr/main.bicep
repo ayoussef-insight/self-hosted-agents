@@ -16,19 +16,25 @@ resource acrResource 'Microsoft.ContainerRegistry/registries@2021-06-01-preview'
   }
   properties: {
     adminUserEnabled: true
-    policies: acrSku == 'Premium' ? {
-      quarantinePolicy: {
-        status: 'enabled'
-      }
-      trustPolicy: {
-        status: 'enabled'
-        type: 'Notary'
-      }
-      retentionPolicy: {
-        status: 'enabled'
-        days: 30
-      }
-    } : {}
+    publicNetworkAccess: acrSku == 'Premium' ? 'Disabled' : 'Enabled'
+    networkRuleSet: acrSku == 'Premium' ? {
+      defaultAction: 'Deny'
+    } : null
+    policies: acrSku == 'Premium'
+      ? {
+          quarantinePolicy: {
+            status: 'enabled'
+          }
+          trustPolicy: {
+            status: 'enabled'
+            type: 'Notary'
+          }
+          retentionPolicy: {
+            status: 'enabled'
+            days: 30
+          }
+        }
+      : {}
   }
 }
 

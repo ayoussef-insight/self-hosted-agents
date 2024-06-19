@@ -50,8 +50,8 @@ RUN (New-Object Net.WebClient).DownloadFile('https://dot.net/v1/dotnet-install.p
     if (-not $currentPath.Contains($installPath)) { setx PATH ($currentPath + ';' + $installPath) } ; \
     if (-not $env:path.Contains($installPath)) { $env:path += ';' + $installPath }
 
-# Install Node 18
-RUN (New-Object Net.WebClient).DownloadFile('https://nodejs.org/dist/v18.16.1/node-v18.16.1-x64.msi', '.\node.msi'); \
+# Install Node 20
+RUN (New-Object Net.WebClient).DownloadFile('https://nodejs.org/dist/v20.14.0/node-v20.14.0-x64.msi', '.\node.msi'); \
     Start-Process msiexec.exe -Wait -ArgumentList '/I node.msi /quiet'; \
     Remove-Item .\node.msi;
 

@@ -17,7 +17,6 @@ Remove-Item Env:GITHUB_TOKEN
 
 $GITHUB_REPOSITORY=$Env:GITHUB_REPOSITORY
 $GITHUB_TOKEN=$(Get-Content $Env:GITHUB_TOKEN_FILE)
-$Name = if ($env:NAME) { $env:NAME } else { "hosted-runner-01" }
 
 try
 {
@@ -28,7 +27,7 @@ try
   Write-Host "2. Configuring github actions runner..." -ForegroundColor Cyan
 
   .\config.cmd --unattended `
-    --name "$Name" `
+    --name "$(if (Test-Path Env:NAME) { ${Env:NAME} } else { ${Env:COMPUTERNAME} })" `
     --url "https://github.com/$GITHUB_REPOSITORY" `
     --token "$Token" `
     --replace
