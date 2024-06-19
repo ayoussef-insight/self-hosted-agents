@@ -59,7 +59,7 @@ trap 'cleanup; exit 143' TERM
 print_header "1. Configuring Azure Pipelines agent..."
 
 ./config.sh --unattended \
-  --agent "${NAME:-$(hostname)}" \
+  --agent "${NAME:-$HOSTNAME}" \
   --url "$AZP_URL" \
   --auth PAT \
   --token $(cat "$AZP_TOKEN_FILE") \

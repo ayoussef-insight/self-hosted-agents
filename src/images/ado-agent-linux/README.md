@@ -26,6 +26,10 @@ choosing "Show all scopes".
 ```bash
 docker-compose up --build -d --scale agent=2
 ```
+For ARM64 architecture, use the following command:
+```bash
+docker-compose -f docker-compose-arm64.yml up --build -d --scale agent=2
+```
 
 ### Start from docker
 
